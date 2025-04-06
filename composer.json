@@ -1,0 +1,35 @@
+{
+    "name": "yourvendor/quickzoom",
+    "description": "A Laravel package for Zoom integration",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Your Name",
+            "email": "your.email@example.com"
+        }
+    ],
+    "require": {
+        "php": "^7.4|^8.0",
+        "illuminate/support": "^8.0|^9.0|^10.0",
+        "guzzlehttp/guzzle": "^7.0",
+        "firebase/php-jwt": "^6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "YourVendor\\QuickZoom\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "YourVendor\\QuickZoom\\QuickZoomServiceProvider"
+            ],
+            "aliases": {
+                "QuickZoom": "YourVendor\\QuickZoom\\Facades\\QuickZoom"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
