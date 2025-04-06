@@ -1062,10 +1062,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('quickzoom_meetings', function (Blueprint $table) {
+        Schema::create('zoom_meetings', function (Blueprint $table) {
             $table->id();
             $table->string('zoom_id')->unique();
-            $table->unsignedBigInteger('user_id');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('topic');
             $table->text('agenda')->nullable();
             $table->string('start_url');
@@ -1078,9 +1078,359 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('quickzoom_meeting_participants', function (Blueprint $table) {
+        Schema::create('zoom_meeting_participants', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('meeting_id')
+            $table->foreignId('zoom_meeting_id')->constrained('zoom_meetings')->onDelete('cascade');
+            $table->string('participant_id')->nullable();
+            $table->string('name');
+            $table->string('email');
+            $table->dateTime('join_time')->nullable();
+            $table->dateTime('leave_time')->nullable();
+            $table->integer('duration')->nullable();
+            $table->timestamps();
         });
 
+        Schema::create('zoom_recordings', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('zoom_meeting_id')->constrained('zoom_meetings')->onDelete('cascade');
+            $table->string('recording_id')->unique();
+            $table->string('meeting_id');
+            $table->string('recording_type');
+            $table->string('download_url');
+            $table->string('password')->nullable();
+            $table->dateTime('recording_start');
+            $table->dateTime('recording_end');
+            $table->integer('file_size')->nullable();
+            $table->string('file_type')->nullable();
+            $table->timestamps();
+        });
     }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('zoom_recordings');
+        Schema::dropIfExists('zoom_meeting_participants');
+        Schema::dropIfExists('zoom_meetings');
+    }
+};
+
+
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class ZoomMeeting extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'zoom_id',
+        'user_id',
+        'topic',
+        'agenda',
+        'start_url',
+        'join_url',
+        'password',
+        'start_time',
+        'duration',
+        'status',
+        'settings',
+    ];
+
+    protected $casts = [
+        'start_time' => 'datetime',
+        'settings' => 'array',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function participants()
+    {
+        return $this->hasMany(ZoomMeetingParticipant::class);
+    }
+
+    public function recordings()
+    {
+        return $this->hasMany(ZoomRecording::class);
+    }
+}
+
+class ZoomMeetingParticipant extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'zoom_meeting_id',
+        'participant_id',
+        'name',
+        'email',
+        'join_time',
+        'leave_time',
+        'duration',
+    ];
+
+    protected $casts = [
+        'join_time' => 'datetime',
+        'leave_time' => 'datetime',
+    ];
+
+    public function meeting()
+    {
+        return $this->belongsTo(ZoomMeeting::class, 'zoom_meeting_id');
+    }
+}
+
+class ZoomRecording extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'zoom_meeting_id',
+        'recording_id',
+        'meeting_id',
+        'recording_type',
+        'download_url',
+        'password',
+        'recording_start',
+        'recording_end',
+        'file_size',
+        'file_type',
+    ];
+
+    protected $casts = [
+        'recording_start' => 'datetime',
+        'recording_end' => 'datetime',
+    ];
+
+    public function meeting()
+    {
+        return $this->belongsTo(ZoomMeeting::class, 'zoom_meeting_id');
+    }
+}
+
+
+# Laravel Zoom Integration
+
+This package provides a complete solution to integrate Zoom video conferencing with your Laravel application. It offers a comprehensive set of features to manage Zoom meetings, participants, recordings, and more.
+
+## Features
+
+- Create, read, update, and delete Zoom meetings
+- List and manage meeting participants
+- Access and manage meeting recordings
+- Handle Zoom webhooks
+- Store meeting data in your database
+- Easy-to-use API endpoints
+
+## Installation
+
+### 1. Install the package via Composer:
+
+```bash
+composer require firebase/php-jwt
+```
+
+### 2. Add the Zoom Service Provider to your `config/app.php` file:
+
+```php
+'providers' => [
+    // ...
+    App\Providers\ZoomServiceProvider::class,
+],
+```
+
+### 3. Publish the configuration file:
+
+```bash
+php artisan vendor:publish --tag=zoom-config
+```
+
+### 4. Add the following variables to your `.env` file:
+
+```
+ZOOM_API_KEY=your_zoom_api_key
+ZOOM_API_SECRET=your_zoom_api_secret
+ZOOM_WEBHOOK_SECRET=your_zoom_webhook_secret  # Optional, only if using webhooks
+```
+
+### 5. Run the migrations:
+
+```bash
+php artisan migrate
+```
+
+## Usage
+
+### Setting Up Zoom API Credentials
+
+1. Go to the [Zoom App Marketplace](https://marketplace.zoom.us/)
+2. Click "Develop" in the upper right and select "Build App"
+3. Choose "JWT" as the app type
+4. Fill in the required information and create your app
+5. Copy the API Key and API Secret to your `.env` file
+
+### Basic Meeting Management
+
+#### Creating a Meeting
+
+```php
+use App\Services\Zoom\ZoomService;
+
+$zoomService = app(ZoomService::class);
+
+$meeting = $zoomService->createMeeting('me', [
+    'topic' => 'Team Meeting',
+    'start_time' => '2025-03-25T10:00:00Z',
+    'duration' => 60, // minutes
+    'agenda' => 'Discuss project progress',
+    'settings' => [
+        'host_video' => true,
+        'participant_video' => true,
+        'join_before_host' => false,
+        'mute_upon_entry' => true,
+        'waiting_room' => true,
+    ]
+]);
+```
+
+#### Getting Meeting Details
+
+```php
+$meeting = $zoomService->getMeeting($meetingId);
+```
+
+#### Updating a Meeting
+
+```php
+$updatedMeeting = $zoomService->updateMeeting($meetingId, [
+    'topic' => 'Updated Team Meeting',
+    'duration' => 90
+]);
+```
+
+#### Deleting a Meeting
+
+```php
+$zoomService->deleteMeeting($meetingId);
+```
+
+#### Ending a Meeting
+
+```php
+$zoomService->endMeeting($meetingId);
+```
+
+### Working with Participants
+
+#### Listing Participants
+
+```php
+$participants = $zoomService->listParticipants($meetingId);
+```
+
+#### Registering a Participant
+
+```php
+$registration = $zoomService->registerParticipant($meetingId, [
+    'email' => 'participant@example.com',
+    'first_name' => 'John',
+    'last_name' => 'Doe'
+]);
+```
+
+### Working with Recordings
+
+```php
+$recordings = $zoomService->listRecordings($meetingId);
+```
+
+### Using API Routes
+
+This package includes a set of API routes that you can use to manage Zoom meetings:
+
+- `GET /api/zoom/meetings` - List all meetings
+- `POST /api/zoom/meetings` - Create a new meeting
+- `GET /api/zoom/meetings/{id}` - Get a specific meeting
+- `PUT /api/zoom/meetings/{id}` - Update a meeting
+- `DELETE /api/zoom/meetings/{id}` - Delete a meeting
+- `PUT /api/zoom/meetings/{id}/end` - End a meeting
+- `GET /api/zoom/meetings/{id}/participants` - Get meeting participants
+- `GET /api/zoom/meetings/{id}/recordings` - Get meeting recordings
+- `POST /api/zoom/meetings/{id}/register` - Register a participant
+
+### Working with Webhooks
+
+To receive Zoom webhooks:
+
+1. Add the webhook route to your `routes/api.php` file:
+
+```php
+Route::post('zoom/webhook', [App\Http\Controllers\ZoomWebhookController::class, 'handle']);
+```
+
+2. Set up the webhook in your Zoom app settings:
+   - Log in to the [Zoom App Marketplace](https://marketplace.zoom.us/)
+   - Navigate to your app
+   - Go to the "Feature" tab
+   - Click "Event Subscriptions" and add a subscription
+   - Enter your webhook URL (e.g., `https://yourdomain.com/api/zoom/webhook`)
+   - Select the events you want to subscribe to
+
+3. Handle the webhook events in your application by listening to the dispatched events:
+
+```php
+// In your EventServiceProvider.php
+protected $listen = [
+    'App\Events\ZoomMeetingStarted' => [
+        'App\Listeners\HandleZoomMeetingStarted',
+    ],
+    'App\Events\ZoomMeetingEnded' => [
+        'App\Listeners\HandleZoomMeetingEnded',
+    ],
+    'App\Events\ZoomParticipantJoined' => [
+        'App\Listeners\HandleZoomParticipantJoined',
+    ],
+    'App\Events\ZoomParticipantLeft' => [
+        'App\Listeners\HandleZoomParticipantLeft',
+    ],
+];
+```
+
+## Database Models
+
+The package includes the following database models:
+
+- `ZoomMeeting` - Stores meeting information
+- `ZoomMeetingParticipant` - Stores participant information
+- `ZoomRecording` - Stores recording information
+
+You can use these models to query and manipulate meeting data in your application.
+
+## Logging
+
+All API errors are logged to the Laravel log file. You can view these logs to troubleshoot any issues with the Zoom API integration.
+
+## Security
+
+This package uses JWT authentication to securely communicate with the Zoom API. The token is automatically generated and cached for optimal performance.
+
+## License
+
+This package is open-sourced software licensed under the MIT license.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Support
+
+If you need any help, please open an issue on the GitHub repository.
