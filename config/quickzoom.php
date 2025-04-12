@@ -1,36 +1,29 @@
 <?php
-// config/quickzoom.php
-
+// quickzoom/config/quickzoom.php
 return [
-    /*
-    |--------------------------------------------------------------------------
-    | Zoom API Credentials
-    |--------------------------------------------------------------------------
-    |
-    | These values are required to authenticate with the Zoom API.
-    | You can obtain these credentials from the Zoom Marketplace.
-    |
-    */
     'api_key' => env('ZOOM_API_KEY', ''),
     'api_secret' => env('ZOOM_API_SECRET', ''),
+    'base_url' => env('ZOOM_BASE_URL', 'https://api.zoom.us/v2/'),
+    'token_lifespan' => env('ZOOM_TOKEN_LIFESPAN', 60 * 60),
+    'webhook_secret' => env('ZOOM_WEBHOOK_SECRET', ''),
     
-    /*
-    |--------------------------------------------------------------------------
-    | Zoom API Base URL
-    |--------------------------------------------------------------------------
-    |
-    | The base URL for the Zoom API.
-    |
-    */
-    'base_url' => env('ZOOM_BASE_URL', 'https://api.zoom.us/v2'),
+    'routes' => [
+        'prefix' => 'api/zoom',
+        'middleware' => ['api', 'auth:sanctum'],
+        'webhook_path' => 'webhook',
+        'webhook_middleware' => ['api'],
+    ],
     
-    /*
-    |--------------------------------------------------------------------------
-    | JWT Token Expiration
-    |--------------------------------------------------------------------------
-    |
-    | How long the JWT token is valid for in seconds.
-    |
-    */
-    'token_expiration' => env('ZOOM_TOKEN_EXPIRATION', 60 * 60), // 1 hour
+    'default_settings' => [
+        'host_video' => true,
+        'participant_video' => true,
+        'join_before_host' => false,
+        'mute_upon_entry' => true,
+        'waiting_room' => true,
+        'approval_type' => 0,
+        'audio' => 'both',
+        'auto_recording' => 'none',
+    ],
+    
+    'timezone' => env('ZOOM_TIMEZONE', config('app.timezone')),
 ];
