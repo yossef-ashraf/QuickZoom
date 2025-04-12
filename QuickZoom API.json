@@ -1,0 +1,522 @@
+{
+    "info": {
+      "_postman_id": "a1b2c3d4-e5f6-7g8h-9i0j-k1l2m3n4o5p6",
+      "name": "QuickZoom API",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+      "description": "Postman collection for QuickZoom Laravel Package API endpoints"
+    },
+    "item": [
+      {
+        "name": "Meetings",
+        "item": [
+          {
+            "name": "List All Meetings",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Accept",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{auth_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/api/zoom/meetings",
+                "host": ["{{base_url}}"],
+                "path": ["api", "zoom", "meetings"]
+              }
+            },
+            "response": [
+              {
+                "name": "Successful Response",
+                "originalRequest": {
+                  "method": "GET",
+                  "header": [
+                    {
+                      "key": "Accept",
+                      "value": "application/json"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{base_url}}/api/zoom/meetings",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "zoom", "meetings"]
+                  }
+                },
+                "code": 200,
+                "body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"id\": \"123456789\",\n            \"topic\": \"Team Meeting\",\n            \"start_time\": \"2023-12-25T10:00:00Z\",\n            \"duration\": 60,\n            \"join_url\": \"https://zoom.us/j/123456789\"\n        }\n    ]\n}"
+              }
+            ]
+          },
+          {
+            "name": "Create Meeting",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Accept",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{auth_token}}"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n    \"topic\": \"Team Meeting\",\n    \"start_time\": \"2023-12-25T10:00:00Z\",\n    \"duration\": 60,\n    \"agenda\": \"Quarterly planning session\",\n    \"settings\": {\n        \"host_video\": true,\n        \"participant_video\": true,\n        \"waiting_room\": true\n    }\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/zoom/meetings",
+                "host": ["{{base_url}}"],
+                "path": ["api", "zoom", "meetings"]
+              }
+            },
+            "response": [
+              {
+                "name": "Successful Response",
+                "originalRequest": {
+                  "method": "POST",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"topic\": \"Team Meeting\",\n    \"start_time\": \"2023-12-25T10:00:00Z\",\n    \"duration\": 60,\n    \"agenda\": \"Quarterly planning session\"\n}"
+                  },
+                  "url": {
+                    "raw": "{{base_url}}/api/zoom/meetings",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "zoom", "meetings"]
+                  }
+                },
+                "code": 201,
+                "body": "{\n    \"success\": true,\n    \"message\": \"Meeting created successfully\",\n    \"data\": {\n        \"id\": \"123456789\",\n        \"topic\": \"Team Meeting\",\n        \"start_time\": \"2023-12-25T10:00:00Z\",\n        \"duration\": 60,\n        \"join_url\": \"https://zoom.us/j/123456789\",\n        \"start_url\": \"https://zoom.us/s/123456789?zak=xxx\"\n    }\n}"
+              }
+            ]
+          },
+          {
+            "name": "Get Meeting Details",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Accept",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{auth_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/api/zoom/meetings/123456789",
+                "host": ["{{base_url}}"],
+                "path": ["api", "zoom", "meetings", "123456789"]
+              }
+            },
+            "response": [
+              {
+                "name": "Successful Response",
+                "originalRequest": {
+                  "method": "GET",
+                  "header": [
+                    {
+                      "key": "Accept",
+                      "value": "application/json"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{base_url}}/api/zoom/meetings/123456789",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "zoom", "meetings", "123456789"]
+                  }
+                },
+                "code": 200,
+                "body": "{\n    \"success\": true,\n    \"data\": {\n        \"id\": \"123456789\",\n        \"topic\": \"Team Meeting\",\n        \"start_time\": \"2023-12-25T10:00:00Z\",\n        \"duration\": 60,\n        \"join_url\": \"https://zoom.us/j/123456789\",\n        \"password\": \"123456\"\n    }\n}"
+              }
+            ]
+          },
+          {
+            "name": "Update Meeting",
+            "request": {
+              "method": "PUT",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Accept",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{auth_token}}"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n    \"topic\": \"Updated Team Meeting\",\n    \"duration\": 90\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/zoom/meetings/123456789",
+                "host": ["{{base_url}}"],
+                "path": ["api", "zoom", "meetings", "123456789"]
+              }
+            },
+            "response": [
+              {
+                "name": "Successful Response",
+                "originalRequest": {
+                  "method": "PUT",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"topic\": \"Updated Team Meeting\",\n    \"duration\": 90\n}"
+                  },
+                  "url": {
+                    "raw": "{{base_url}}/api/zoom/meetings/123456789",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "zoom", "meetings", "123456789"]
+                  }
+                },
+                "code": 200,
+                "body": "{\n    \"success\": true,\n    \"message\": \"Meeting updated successfully\",\n    \"data\": {\n        \"id\": \"123456789\",\n        \"topic\": \"Updated Team Meeting\",\n        \"duration\": 90\n    }\n}"
+              }
+            ]
+          },
+          {
+            "name": "Delete Meeting",
+            "request": {
+              "method": "DELETE",
+              "header": [
+                {
+                  "key": "Accept",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{auth_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/api/zoom/meetings/123456789",
+                "host": ["{{base_url}}"],
+                "path": ["api", "zoom", "meetings", "123456789"]
+              }
+            },
+            "response": [
+              {
+                "name": "Successful Response",
+                "originalRequest": {
+                  "method": "DELETE",
+                  "header": [
+                    {
+                      "key": "Accept",
+                      "value": "application/json"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{base_url}}/api/zoom/meetings/123456789",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "zoom", "meetings", "123456789"]
+                  }
+                },
+                "code": 200,
+                "body": "{\n    \"success\": true,\n    \"message\": \"Meeting deleted successfully\"\n}"
+              }
+            ]
+          },
+          {
+            "name": "End Meeting",
+            "request": {
+              "method": "PUT",
+              "header": [
+                {
+                  "key": "Accept",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{auth_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/api/zoom/meetings/123456789/end",
+                "host": ["{{base_url}}"],
+                "path": ["api", "zoom", "meetings", "123456789", "end"]
+              }
+            },
+            "response": [
+              {
+                "name": "Successful Response",
+                "originalRequest": {
+                  "method": "PUT",
+                  "header": [
+                    {
+                      "key": "Accept",
+                      "value": "application/json"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{base_url}}/api/zoom/meetings/123456789/end",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "zoom", "meetings", "123456789", "end"]
+                  }
+                },
+                "code": 200,
+                "body": "{\n    \"success\": true,\n    \"message\": \"Meeting ended successfully\"\n}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Participants",
+        "item": [
+          {
+            "name": "List Meeting Participants",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Accept",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{auth_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/api/zoom/meetings/123456789/participants",
+                "host": ["{{base_url}}"],
+                "path": ["api", "zoom", "meetings", "123456789", "participants"]
+              }
+            },
+            "response": [
+              {
+                "name": "Successful Response",
+                "originalRequest": {
+                  "method": "GET",
+                  "header": [
+                    {
+                      "key": "Accept",
+                      "value": "application/json"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{base_url}}/api/zoom/meetings/123456789/participants",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "zoom", "meetings", "123456789", "participants"]
+                  }
+                },
+                "code": 200,
+                "body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"id\": \"p123456\",\n            \"name\": \"John Doe\",\n            \"email\": \"john@example.com\",\n            \"join_time\": \"2023-12-25T10:05:23Z\",\n            \"leave_time\": \"2023-12-25T10:55:12Z\"\n        }\n    ]\n}"
+              }
+            ]
+          },
+          {
+            "name": "Register Participant",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Accept",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{auth_token}}"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n    \"email\": \"john@example.com\",\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/zoom/meetings/123456789/register",
+                "host": ["{{base_url}}"],
+                "path": ["api", "zoom", "meetings", "123456789", "register"]
+              }
+            },
+            "response": [
+              {
+                "name": "Successful Response",
+                "originalRequest": {
+                  "method": "POST",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"email\": \"john@example.com\",\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\"\n}"
+                  },
+                  "url": {
+                    "raw": "{{base_url}}/api/zoom/meetings/123456789/register",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "zoom", "meetings", "123456789", "register"]
+                  }
+                },
+                "code": 201,
+                "body": "{\n    \"success\": true,\n    \"message\": \"Participant registered successfully\",\n    \"data\": {\n        \"registrant_id\": \"r123456\",\n        \"join_url\": \"https://zoom.us/j/123456789?pwd=xxx\"\n    }\n}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Recordings",
+        "item": [
+          {
+            "name": "List Meeting Recordings",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Accept",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{auth_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/api/zoom/meetings/123456789/recordings",
+                "host": ["{{base_url}}"],
+                "path": ["api", "zoom", "meetings", "123456789", "recordings"]
+              }
+            },
+            "response": [
+              {
+                "name": "Successful Response",
+                "originalRequest": {
+                  "method": "GET",
+                  "header": [
+                    {
+                      "key": "Accept",
+                      "value": "application/json"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{base_url}}/api/zoom/meetings/123456789/recordings",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "zoom", "meetings", "123456789", "recordings"]
+                  }
+                },
+                "code": 200,
+                "body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"id\": \"rec123456\",\n            \"meeting_id\": \"123456789\",\n            \"recording_start\": \"2023-12-25T10:00:00Z\",\n            \"recording_end\": \"2023-12-25T11:00:00Z\",\n            \"download_url\": \"https://zoom.us/recording/download/xxx\"\n        }\n    ]\n}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Webhooks",
+        "item": [
+          {
+            "name": "Webhook Endpoint",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Accept",
+                  "value": "application/json"
+                },
+                {
+                  "key": "x-zm-signature",
+                  "value": "v0=xxx"
+                },
+                {
+                  "key": "x-zm-request-timestamp",
+                  "value": "1671984000000"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n    \"event\": \"meeting.started\",\n    \"payload\": {\n        \"object\": {\n            \"id\": \"123456789\",\n            \"topic\": \"Team Meeting\",\n            \"start_time\": \"2023-12-25T10:00:00Z\"\n        }\n    }\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/zoom/webhook",
+                "host": ["{{base_url}}"],
+                "path": ["api", "zoom", "webhook"]
+              }
+            },
+            "response": [
+              {
+                "name": "Successful Response",
+                "originalRequest": {
+                  "method": "POST",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"event\": \"meeting.started\",\n    \"payload\": {\n        \"object\": {\n            \"id\": \"123456789\",\n            \"topic\": \"Team Meeting\",\n            \"start_time\": \"2023-12-25T10:00:00Z\"\n        }\n    }\n}"
+                  },
+                  "url": {
+                    "raw": "{{base_url}}/api/zoom/webhook",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "zoom", "webhook"]
+                  }
+                },
+                "code": 200,
+                "body": "{\n    \"message\": \"Webhook processed successfully\"\n}"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "variable": [
+      {
+        "key": "base_url",
+        "value": "http://localhost:8000"
+      },
+      {
+        "key": "auth_token",
+        "value": "your_bearer_token_here"
+      }
+    ],
+    "auth": {
+      "type": "bearer",
+      "bearer": [
+        {
+          "key": "token",
+          "value": "{{auth_token}}",
+          "type": "string"
+        }
+      ]
+    }
+  }
