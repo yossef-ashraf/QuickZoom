@@ -1,172 +1,146 @@
 <?php
+namespace QuickZoom\Services;
 
-namespace YourVendor\QuickZoom\Services;
-
+use Carbon\Carbon;
 use Firebase\JWT\JWT;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use QuickZoom\Contracts\ZoomServiceInterface;
 
-class ZoomService
+class ZoomService implements ZoomServiceInterface
 {
-    /**
-     * Zoom API Key
-     *
-     * @var string
-     */
-    protected $apiKey;
-
-    /**
-     * Zoom API Secret
-     *
-     * @var string
-     */
-    protected $apiSecret;
-
-    /**
-     * Zoom API Base URL
-     *
-     * @var string
-     */
-    protected $baseUrl;
-
-    /**
-     * HTTP Client
-     *
-     * @var \GuzzleHttp\Client
-     */
     protected $client;
+    protected $apiKey;
+    protected $apiSecret;
+    protected $baseUrl;
+    protected $tokenLifespan;
 
-    /**
-     * Constructor
-     *
-     * @param string $apiKey
-     * @param string $apiSecret
-     * @param string $baseUrl
-     */
-    public function __construct($apiKey, $apiSecret, $baseUrl)
+    public function __construct()
     {
-        $this->apiKey = $apiKey;
-        $this->apiSecret = $apiSecret;
-        $this->baseUrl = $baseUrl;
-        $this->client = new Client();
+        $this->apiKey = config('quickzoom.api_key');
+        $this->apiSecret = config('quickzoom.api_secret');
+        $this->baseUrl = config('quickzoom.base_url');
+        $this->tokenLifespan = config('quickzoom.token_lifespan');
+
+        $this->client = new Client([
+            'base_uri' => $this->baseUrl,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ]
+        ]);
     }
 
-    /**
-     * Generate JWT Token for Zoom API
-     *
-     * @return string
-     */
-    protected function generateToken()
+    protected function getToken()
     {
-        $token = [
-            'iss' => $this->apiKey,
-            'exp' => time() + config('quickzoom.token_expiration', 60 * 60),
-        ];
-
-        return JWT::encode($token, $this->apiSecret, 'HS256');
+        return Cache::remember('zoom_token', $this->tokenLifespan, function () {
+            $payload = [
+                'iss' => $this->apiKey,
+                'exp' => time() + $this->tokenLifespan,
+            ];
+            return JWT::encode($payload, $this->apiSecret, 'HS256');
+        });
     }
 
-    /**
-     * Make a request to the Zoom API
-     *
-     * @param string $method
-     * @param string $endpoint
-     * @param array $params
-     * @return mixed
-     * @throws \Exception
-     */
-    protected function request($method, $endpoint, $params = [])
+    protected function request($method, $endpoint, $data = [])
     {
-        $url = $this->baseUrl . $endpoint;
-        $token = $this->generateToken();
-
         try {
-            $response = $this->client->request($method, $url, [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $token,
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => $params,
+            $token = $this->getToken();
+            
+            $response = $this->client->request($method, $endpoint, [
+                'headers' => ['Authorization' => 'Bearer ' . $token],
+                'json' => $data,
             ]);
 
-            return json_decode($response->getBody()->getContents(), true);
-        } catch (GuzzleException $e) {
-            Log::error('QuickZoom API Error: ' . $e->getMessage());
-            throw new \Exception('Zoom API Error: ' . $e->getMessage());
+            return json_decode($response->getBody(), true);
+        } catch (\Exception $e) {
+            Log::error('QuickZoom API Error: ' . $e->getMessage(), [
+                'method' => $method,
+                'endpoint' => $endpoint,
+                'data' => $data,
+                'exception' => $e
+            ]);
+            throw $e;
         }
     }
 
-    /**
-     * Create a new Zoom meeting
-     *
-     * @param array $data
-     * @return array
-     * @throws \Exception
-     */
-    public function createMeeting(array $data)
+    public function listMeetings($userId = 'me'): array
     {
-        return $this->request('POST', '/users/me/meetings', $data);
+        return $this->request('GET', "users/{$userId}/meetings");
     }
 
-    /**
-     * Get a specific Zoom meeting
-     *
-     * @param string $meetingId
-     * @return array
-     * @throws \Exception
-     */
-    public function getMeeting($meetingId)
+    public function getMeeting($meetingId): array
     {
-        return $this->request('GET', '/meetings/' . $meetingId);
+        return $this->request('GET', "meetings/{$meetingId}");
     }
 
-    /**
-     * Update a Zoom meeting
-     *
-     * @param string $meetingId
-     * @param array $data
-     * @return array
-     * @throws \Exception
-     */
-    public function updateMeeting($meetingId, array $data)
+    public function createMeeting($userId = 'me', array $data = []): array
     {
-        return $this->request('PATCH', '/meetings/' . $meetingId, $data);
+        $defaultData = [
+            'topic' => 'New Meeting',
+            'type' => 2,
+            'start_time' => Carbon::now()->toDateTimeString(),
+            'duration' => 60,
+            'timezone' => config('quickzoom.timezone'),
+            'settings' => config('quickzoom.default_settings', []),
+        ];
+
+        return $this->request('POST', "users/{$userId}/meetings", array_merge($defaultData, $data));
     }
 
-    /**
-     * Delete a Zoom meeting
-     *
-     * @param string $meetingId
-     * @return array
-     * @throws \Exception
-     */
-    public function deleteMeeting($meetingId)
+    public function updateMeeting($meetingId, array $data = []): array
     {
-        return $this->request('DELETE', '/meetings/' . $meetingId);
+        return $this->request('PATCH', "meetings/{$meetingId}", $data);
     }
 
-    /**
-     * List all meetings for the current user
-     *
-     * @param array $query
-     * @return array
-     * @throws \Exception
-     */
-    public function listMeetings(array $query = [])
+    public function deleteMeeting($meetingId): array
     {
-        return $this->request('GET', '/users/me/meetings?' . http_build_query($query));
+        return $this->request('DELETE', "meetings/{$meetingId}");
     }
 
-    /**
-     * Get meeting participants
-     *
-     * @param string $meetingId
-     * @return array
-     * @throws \Exception
-     */
-    public function getMeetingParticipants($meetingId)
+    public function endMeeting($meetingId): array
     {
-        return $this->request('GET', '/report/meetings/' . $meetingId . '/participants');
+        return $this->request('PUT', "meetings/{$meetingId}/status", ['action' => 'end']);
+    }
+
+    public function listParticipants($meetingId): array
+    {
+        return $this->request('GET', "meetings/{$meetingId}/participants");
+    }
+
+    public function registerParticipant($meetingId, array $participantData): array
+    {
+        return $this->request('POST', "meetings/{$meetingId}/registrants", $participantData);
+    }
+
+    public function listRecordings($meetingId): array
+    {
+        return $this->request('GET', "meetings/{$meetingId}/recordings");
+    }
+
+    public function getUser($userId = 'me'): array
+    {
+        return $this->request('GET', "users/{$userId}");
+    }
+
+    public function listUsers(): array
+    {
+        return $this->request('GET', "users");
+    }
+
+    public function createUser(array $userData): array
+    {
+        return $this->request('POST', "users", $userData);
+    }
+
+    public function createWebinar($userId, array $data): array
+    {
+        return $this->request('POST', "users/{$userId}/webinars", $data);
+    }
+
+    public function listWebinars($userId): array
+    {
+        return $this->request('GET', "users/{$userId}/webinars");
     }
 }
