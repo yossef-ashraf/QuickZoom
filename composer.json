@@ -1,32 +1,45 @@
 {
-    "name": "yourvendor/quickzoom",
-    "description": "A Laravel package for Zoom integration",
+    "name": "quickhelper/quickzoom",
+    "description": "A complete Laravel Zoom integration package",
+    "keywords": ["laravel", "zoom", "meetings", "api", "video", "conference"],
     "type": "library",
     "license": "MIT",
     "authors": [
         {
-            "name": "Your Name",
-            "email": "your.email@example.com"
+            "name": "yossef ashraf",
+            "email": "yossefff2001@gmail.com"
         }
     ],
     "require": {
-        "php": "^7.4|^8.0",
-        "illuminate/support": "^8.0|^9.0|^10.0",
+        "php": "^8.0",
         "guzzlehttp/guzzle": "^7.0",
-        "firebase/php-jwt": "^6.0"
+        "firebase/php-jwt": "^6.0",
+        "illuminate/support": "^9.0|^10.0",
+        "illuminate/console": "^9.0|^10.0",
+        "illuminate/database": "^9.0|^10.0",
+        "illuminate/http": "^9.0|^10.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0",
+        "orchestra/testbench": "^7.0|^8.0"
     },
     "autoload": {
         "psr-4": {
-            "YourVendor\\QuickZoom\\": "src/"
+            "QuickZoom\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "QuickZoom\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "YourVendor\\QuickZoom\\QuickZoomServiceProvider"
+                "QuickZoom\\Providers\\QuickZoomServiceProvider"
             ],
             "aliases": {
-                "QuickZoom": "YourVendor\\QuickZoom\\Facades\\QuickZoom"
+                "QuickZoom": "QuickZoom\\Facades\\QuickZoom"
             }
         }
     },
