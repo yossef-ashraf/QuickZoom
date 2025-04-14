@@ -1,4 +1,4 @@
-```markdown
+
 # QuickZoom - Laravel Zoom Integration Package
 
 [![Latest Version](https://img.shields.io/packagist/v/quickhelper/quickzoom.svg?style=flat-square)](https://packagist.org/packages/quickhelper/quickzoom)
